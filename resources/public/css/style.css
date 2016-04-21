@@ -1,3 +1,36 @@
-h1 {
-  text-decoration: underline;
+html {
+    height: 100%;
+     background:
+    linear-gradient(
+    rgba(44, 62, 80,0.95),
+    rgba(44, 62, 80,0.95)),
+     url(http://eskipaper.com/images/video-game-wallpapers-22.jpg) no-repeat center center fixed;
+      -webkit-background-size: cover;
+      -moz-background-size: cover;
+      -o-background-size: cover;
+      background-size: cover;
+      filter: blur(20px);
 }
+
+body {
+    height: 100%;
+    margin: 0px;
+}
+
+ul {
+    list-style: none;
+    padding: 0px;
+    margin: 0px;
+    height: 100%;
+    text-align: center;
+    font-size: 0px;
+}
+
+li {
+    list-style-type: none;
+    width: 300px;
+    height: 300px;
+    display: inline-block;
+    margin: 2px;
+    }
+
