@@ -32,6 +32,8 @@ li {
     height: 300px;
     display: inline-block;
     margin: 2px;
+    position: relative;
+    overflow: hidden;
     }
 
 video {
@@ -41,3 +43,14 @@ video {
       /* Setting width & height to auto prevents the browser from stretching or squishing the video */
 
 }
+
+#bg-cover{
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    z-index: 100;
+    background: blue;
+}
+
+

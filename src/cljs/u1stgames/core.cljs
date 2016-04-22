@@ -58,20 +58,37 @@
               (new js/YT.Player uid #js {:height "300"
                                          :width "300"
                                          :videoId "scPbcEUCiec"
+                                         :playerVars #js {:controls 0
+                                                          :showinfo 0
+                                                          :modestbranding 1}
                                          :events #js {:onReady #(println "ready")
-                                                      :onStateChange #(println "state change")}}))))))
+                                                      :onStateChange #(println "state change")}}))))
+        (.hover
+          (js/$ "#lili")
+          #(do
+            (println "mouseover")
+            (.animate
+              (js/$ "#bg-cover")
+              #js {:marginTop "-300px"} 500)
+            )
+
+          #(do
+            (println "mouseOut")
+            (.animate
+              (js/$ "#bg-cover")
+              #js {:marginTop "0px"} 500)
+            )
+          )
+
+        ))
 
     om/IRenderState
     (render-state [_ {:keys [uid player]}]
-      (dom/li #js {:onMouseOver #(do
-                                  (println "mouseover")
-                                  (.playVideo player)
-                                  )
-                   :onMouseOut #(do
-                                 (println "mouseout")
-                                 (.pauseVideo player)
-                                 )}
-              (dom/div #js {:id uid})))))
+      (dom/li #js {:id "lili"
+                   :onMouseOver #(.playVideo player)
+                   :onMouseOut #(.pauseVideo player)}
+              (dom/div #js {:id uid})
+              (dom/div #js {:id "bg-cover"})))))
 
 (defn root-component [{:keys [games]} owner]
   (reify
@@ -89,4 +106,5 @@
  root-component
  app-state
  {:target (js/document.getElementById "app")})
+
 
