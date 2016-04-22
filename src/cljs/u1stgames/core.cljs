@@ -40,7 +40,19 @@
     om/IRender
     (render [_]
       (dom/ul nil
+              (dom/li #js {:style #js{}}
+                      (dom/iframe #js {:src "https://www.youtube.com/embed/scPbcEUCiec?rel=0&amp;controls=0&amp;showinfo=0"
+                                       :width "300"
+                                       :height "300"
+                                       :scrolling "no"
+                                       :frameborder "0"
+                                       :allowTransparency "true"
+                                       :allowFullScreen "true"
+                                       :style #js {:border "none"
+                                                   :overflow "hidden"}}))
+
              (om/build-all block-li games)
+
               )
       )))
 

@@ -34,3 +34,10 @@ li {
     margin: 2px;
     }
 
+video {
+    min-width: 300px;
+      min-height: 300px;
+
+      /* Setting width & height to auto prevents the browser from stretching or squishing the video */
+
+}
