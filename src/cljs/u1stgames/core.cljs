@@ -1,8 +1,17 @@
 (ns u1stgames.core
   (:require [om.core :as om :include-macros true]
-            [om.dom :as dom :include-macros true]))
+            [om.dom :as dom :include-macros true]
+            [u1stgames.utils :as u]
+            [cljs.core.async :refer [put! chan <! >! pub sub unsub unsub-all close!]])
+  (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (enable-console-print!)
+
+(def yt-init-chan (chan))
+(def yt-init-pub (pub yt-init-chan :msg-type))
+
+(defn ^:export youtubeReady []
+  (put! yt-init-chan {:msg-type :init}))
 
 (def
   app-state
@@ -27,29 +36,38 @@
    (render [_]
     (dom/li #js {:style #js {:backgroundImage (str "url(" img ")")
                              :backgroundSize "cover"
-                             :backgroundRepeat "no-repeat"
-                             }} )
+                             :backgroundRepeat "no-repeat"}}))))
 
-     )
-   )
-  )
+(defn img-block [data owner]
+  (reify
+    om/IInitState
+    (init-state [_]
+      {:uid (u/uid-gen "yt")})
 
+    om/IDidMount
+    (did-mount [_]
+      (let [subscriber (chan)
+            {:keys [uid]} (om/get-state owner)]
+        (sub yt-init-pub :init subscriber)
+        (go
+          (let [inited (<! subscriber)]
+            (new js/YT.Player uid #js {:height "300"
+                                            :width "300"
+                                            :videoId "scPbcEUCiec"
+                                            :events #js {:onReady #(println "ready")
+                                                         :onStateChange #(println "state change")}})))))
+
+    om/IRenderState
+    (render-state [_ {:keys [uid]}]
+      (dom/li nil
+              (dom/div #js {:id uid})))))
 
 (defn root-component [{:keys [games]} owner]
   (reify
     om/IRender
     (render [_]
       (dom/ul nil
-              (dom/li #js {:style #js{}}
-                      (dom/iframe #js {:src "https://www.youtube.com/embed/scPbcEUCiec?rel=0&amp;controls=0&amp;showinfo=0"
-                                       :width "300"
-                                       :height "300"
-                                       :scrolling "no"
-                                       :frameborder "0"
-                                       :allowTransparency "true"
-                                       :allowFullScreen "true"
-                                       :style #js {:border "none"
-                                                   :overflow "hidden"}}))
+             (om/build img-block {})
 
              (om/build-all block-li games)
 
@@ -60,3 +78,4 @@
  root-component
  app-state
  {:target (js/document.getElementById "app")})
+

@@ -12,7 +12,8 @@
                  [ring.middleware.logger "0.5.0"]
                  [compojure "1.5.0"]
                  [environ "1.0.2"]
-                 [org.omcljs/om "1.0.0-alpha31"]]
+                 [org.omcljs/om "1.0.0-alpha31"]
+                 [com.lucasbradstreet/cljs-uuid-utils "1.0.2"]]
 
   :plugins [[lein-cljsbuild "1.1.1"]
             [lein-environ "1.0.1"]]
@@ -111,5 +112,5 @@
                           {:app
                            {:source-paths ^:replace ["src/cljs"]
                             :compiler
-                            {:optimizations :advanced
+                            {:optimizations :simple
                              :pretty-print false}}}}}})
