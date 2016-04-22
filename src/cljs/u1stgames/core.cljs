@@ -42,24 +42,35 @@
   (reify
     om/IInitState
     (init-state [_]
-      {:uid (u/uid-gen "yt")})
+      {:uid (u/uid-gen "yt")
+       :player {}})
 
     om/IDidMount
     (did-mount [_]
       (let [subscriber (chan)
-            {:keys [uid]} (om/get-state owner)]
+            {:keys [uid player]} (om/get-state owner)]
         (sub yt-init-pub :init subscriber)
         (go
           (let [inited (<! subscriber)]
-            (new js/YT.Player uid #js {:height "300"
-                                            :width "300"
-                                            :videoId "scPbcEUCiec"
-                                            :events #js {:onReady #(println "ready")
-                                                         :onStateChange #(println "state change")}})))))
+            (om/set-state!
+              owner
+              :player
+              (new js/YT.Player uid #js {:height "300"
+                                         :width "300"
+                                         :videoId "scPbcEUCiec"
+                                         :events #js {:onReady #(println "ready")
+                                                      :onStateChange #(println "state change")}}))))))
 
     om/IRenderState
-    (render-state [_ {:keys [uid]}]
-      (dom/li nil
+    (render-state [_ {:keys [uid player]}]
+      (dom/li #js {:onMouseOver #(do
+                                  (println "mouseover")
+                                  (.playVideo player)
+                                  )
+                   :onMouseOut #(do
+                                 (println "mouseout")
+                                 (.pauseVideo player)
+                                 )}
               (dom/div #js {:id uid})))))
 
 (defn root-component [{:keys [games]} owner]
