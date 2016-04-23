@@ -6,8 +6,18 @@
             [ring.middleware.gzip :refer [wrap-gzip]]
             [ring.middleware.logger :refer [wrap-with-logger]]
             [environ.core :refer [env]]
-            [ring.adapter.jetty :refer [run-jetty]])
+            [ring.adapter.jetty :refer [run-jetty]]
+            [clojure.java.jdbc :as j])
   (:gen-class))
+
+(comment
+  (def mysql-db {:subprotocol "mysql"
+                 :subname "//173.230.153.62:3306/fortunecookies"
+                 :user "root"
+                 :password "naLdC28LCyAMVqq2"})
+
+  (j/query mysql-db ["SELECT title,appid from games"])
+  )
 
 (defroutes routes
   (GET "/" _
