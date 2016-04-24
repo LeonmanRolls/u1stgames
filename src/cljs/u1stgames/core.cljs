@@ -2,13 +2,30 @@
   (:require [om.core :as om :include-macros true]
             [om.dom :as dom :include-macros true]
             [u1stgames.utils :as u]
-            [cljs.core.async :refer [put! chan <! >! pub sub unsub unsub-all close!]])
+            [cljs.core.async :refer [put! chan <! >! pub sub unsub unsub-all close!]]
+            [ajax.core :refer [GET POST]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (enable-console-print!)
 
 (def yt-init-chan (chan))
 (def yt-init-pub (pub yt-init-chan :msg-type))
+
+(defn handler [response]
+  (println (type (cljs.reader/read-string response)))
+  #_(.log js/console (str response)))
+
+(defn error-handler [{:keys [status status-text]}]
+  (.log js/console (str "something bad happened: " status " " status-text)))
+
+(defn chan-get [url chan]
+  (GET url {:handler #(put! chan (cljs.reader/read-string %))}))
+
+(comment
+
+  (GET "/fbgames" {:handler handler})
+
+  )
 
 (defn ^:export youtubeReady []
   (put! yt-init-chan {:msg-type :init}))

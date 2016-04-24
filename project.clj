@@ -16,7 +16,10 @@
                  [org.omcljs/om "1.0.0-alpha31"]
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2"]
                  [org.clojure/java.jdbc "0.6.0-alpha2"]
-                 [mysql/mysql-connector-java "5.1.6"]]
+                 [mysql/mysql-connector-java "5.1.6"]
+                 [fogus/ring-edn "0.3.0"]
+                 [cljs-ajax "0.5.4"]
+                 [clj-http "2.1.0"]]
 
   :plugins [[lein-cljsbuild "1.1.1"]
             [lein-environ "1.0.1"]]
