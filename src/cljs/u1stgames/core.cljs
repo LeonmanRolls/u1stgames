@@ -12,7 +12,8 @@
 (def yt-init-pub (pub yt-init-chan :msg-type))
 
 (defn handler [response]
-  (println (type (cljs.reader/read-string response)))
+  #_(println (type (cljs.reader/read-string response)))
+  (println (cljs.reader/read-string response))
   #_(.log js/console (str response)))
 
 (defn error-handler [{:keys [status status-text]}]
@@ -25,6 +26,8 @@
 
   (GET "/fbgames" {:handler handler})
 
+  (.api js/FB "/1557991804501532" "get" #js {} #(println %))
+
   )
 
 (defn ^:export youtubeReady []
@@ -36,15 +39,6 @@
                  {:img "https://scontent-tpe1-1.xx.fbcdn.net/hphotos-xtp1/t39.2082-0/p528x396/12679461_1065986690126640_622421424_n.jpg"}
                  {:img "https://scontent-tpe1-1.xx.fbcdn.net/hphotos-xap1/t39.2082-0/p528x396/12532990_208055976241061_513677896_n.jpg"}
                  {:img "https://scontent-tpe1-1.xx.fbcdn.net/hphotos-xfa1/t39.2082-0/p528x396/12521777_822095034567909_245141124_n.jpg"}
-                 {:img "https://external-tpe1-1.xx.fbcdn.net/safe_image.php?d=AQDHfbzhSPvVuH1a&w=400&h=225&url=https%3A%2F%2Fscontent-tpe1-1.xx.fbcdn.net%2Fhphotos-xal1%2Ft39.2082-0%2Fp528x396%2F12350990_989179941141650_728204544_n.jpg&cfs=1&blur=0"}
-                 {:img "https://scontent-tpe1-1.xx.fbcdn.net/hphotos-xtp1/t39.2082-0/p528x396/12679461_1065986690126640_622421424_n.jpg"}
-                 {:img "https://scontent-tpe1-1.xx.fbcdn.net/hphotos-xap1/t39.2082-0/p528x396/12532990_208055976241061_513677896_n.jpg"}
-                 {:img "https://scontent-tpe1-1.xx.fbcdn.net/hphotos-xfa1/t39.2082-0/p528x396/12521777_822095034567909_245141124_n.jpg"}
-                 {:img "https://external-tpe1-1.xx.fbcdn.net/safe_image.php?d=AQDHfbzhSPvVuH1a&w=400&h=225&url=https%3A%2F%2Fscontent-tpe1-1.xx.fbcdn.net%2Fhphotos-xal1%2Ft39.2082-0%2Fp528x396%2F12350990_989179941141650_728204544_n.jpg&cfs=1&blur=0"}
-                 {:img "https://scontent-tpe1-1.xx.fbcdn.net/hphotos-xtp1/t39.2082-0/p528x396/12679461_1065986690126640_622421424_n.jpg"}
-                 {:img "https://scontent-tpe1-1.xx.fbcdn.net/hphotos-xap1/t39.2082-0/p528x396/12532990_208055976241061_513677896_n.jpg"}
-                 {:img "https://scontent-tpe1-1.xx.fbcdn.net/hphotos-xfa1/t39.2082-0/p528x396/12521777_822095034567909_245141124_n.jpg"}
-                 {:img "https://external-tpe1-1.xx.fbcdn.net/safe_image.php?d=AQDHfbzhSPvVuH1a&w=400&h=225&url=https%3A%2F%2Fscontent-tpe1-1.xx.fbcdn.net%2Fhphotos-xal1%2Ft39.2082-0%2Fp528x396%2F12350990_989179941141650_728204544_n.jpg&cfs=1&blur=0"}
                  ]}))
 
 (defn block-li [{:keys [img]} owner]

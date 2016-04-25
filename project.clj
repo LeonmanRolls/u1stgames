@@ -19,7 +19,8 @@
                  [mysql/mysql-connector-java "5.1.6"]
                  [fogus/ring-edn "0.3.0"]
                  [cljs-ajax "0.5.4"]
-                 [clj-http "2.1.0"]]
+                 [clj-http "2.1.0"]
+                 [overtone/at-at "1.2.0"]]
 
   :plugins [[lein-cljsbuild "1.1.1"]
             [lein-environ "1.0.1"]]
