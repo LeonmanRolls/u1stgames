@@ -28,8 +28,8 @@ ul {
 
 li {
     list-style-type: none;
-    width: 300px;
-    height: 300px;
+    width: 250px;
+    height: 250px;
     display: inline-block;
     margin: 2px;
     position: relative;
@@ -44,13 +44,12 @@ video {
 
 }
 
-#bg-cover{
+.bg-cover{
     height: 100%;
     width: 100%;
     position: absolute;
     top: 0;
     z-index: 100;
-    background: blue;
 }
 
 
