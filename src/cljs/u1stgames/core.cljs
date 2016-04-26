@@ -3,7 +3,8 @@
             [om.dom :as dom :include-macros true]
             [u1stgames.utils :as u]
             [cljs.core.async :refer [put! chan <! >! pub sub unsub unsub-all close!]]
-            [ajax.core :refer [GET POST]])
+            [ajax.core :refer [GET POST]]
+            [cljs.reader :as reader])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (enable-console-print!)
@@ -15,14 +16,14 @@
 
 (defn handler [response]
   #_(println (type (cljs.reader/read-string response)))
-  (println (clojure.reader/read-string response))
+  (println (reader/read-string response))
   #_(.log js/console (str response)))
 
 (defn error-handler [{:keys [status status-text]}]
   (.log js/console (str "something bad happened: " status " " status-text)))
 
 (defn chan-get [url chan]
-  (GET url {:handler #(put! chan (clojure.reader/read-string %))}))
+  (GET url {:handler #(put! chan (reader/read-string %))}))
 
 (defn ^:export youtubeReady []
   (put! yt-init-chan {:msg-type :init}))
@@ -331,7 +332,7 @@
       (GET
         "/fbgames"
         {:handler (fn [all-games]
-                    (let [read-games (clojure.reader/read-string all-games)]
+                    (let [read-games (reader/read-string all-games)]
                       (println "all-games: " all-games)
                       (om/transact!
                         games
