@@ -56,7 +56,7 @@
 (defmulti img-block (fn [data owner] (:type data)))
 
 (defmethod img-block :game
-  [{:keys [title appid subcategory picture monthly_active_users pics] :as data} owner]
+  [{:keys [title appid subcategory picture monthly_active_users pics ytvideo] :as data} owner]
   (reify
     om/IInitState
     (init-state [_]
@@ -68,6 +68,13 @@
     om/IDidMount
     (did-mount [_]
       (let [subscriber (chan)
+            ytid (if
+                   (empty? ytvideo)
+                   "scPbcEUCiec"
+                   (->
+                     (nth (clojure.string/split ytvideo #"=") 1)
+                     (clojure.string/split  #"&")
+                     (first)))
             {:keys [uid hover-uid bg-cover-uid player]} (om/get-state owner)]
         (sub yt-init-pub :init subscriber)
         #_(go
@@ -95,11 +102,13 @@
                 :player
                 (new js/YT.Player uid #js {:height "300"
                                            :width "300"
-                                           :videoId "scPbcEUCiec"
+                                           :videoId ytid
                                            :playerVars #js {:controls 0
                                                             :showinfo 0
                                                             :modestbranding 1
-                                                            :autoplay 1}
+                                                            :autoplay 1
+                                                            :loop 1
+                                                            :rel 0}
                                            :events #js {:onReady #(println "ready")
                                                         :onStateChange #(println "state change")}}))))
 
@@ -120,7 +129,6 @@
                      ;  :onMouseOver #_(.playVideo player)
                      ; :onMouseOut #(.pauseVideo player)
                      }
-                (dom/div #js {:id uid})
                 (dom/div #js {:id bg-cover-uid
                               :className "bg-cover"
                               :style #js {:backgroundImage (str "url(" (first pics) ")")
@@ -128,7 +136,7 @@
                                           :backgroundRepeat "no-repeat"
                                           :backgroundColour "blue"
                                           :backgroundPosition "50% 50%"
-                                          :marginTop "-300px"}})
+                                          :marginTop "0px"}})
 
                 (dom/div #js {:style #js {:position "absolute" :width "100%" :height "150px"
                                           :background "linear-gradient(to top, rgba(0,0,0,0), rgba(0,0,0,1))"}})
@@ -153,7 +161,11 @@
                                                     :width "70px" :textTransform "uppercase"
                                                     :fontWeight "bold" :cursor "crosshair"}}
                                    "Play "
-                                   (dom/i #js {:className "fa fa-gamepad" :ariaHidden "true"}))))))))
+                                   (dom/i #js {:className "fa fa-gamepad" :ariaHidden "true"})))
+
+                (dom/div #js {:id uid})
+
+                )))))
 
 (defmethod img-block :home
   [{:keys [logo] :as data} owner]
@@ -197,7 +209,7 @@
                                         :backgroundRepeat "no-repeat"
                                         :backgroundColour "blue"
                                         :backgroundPosition "50% 50%"
-                                        :marginTop "-300px"}})
+                                        :marginTop "0px"}})
 
               (dom/div #js {:style #js {:position "absolute" :width "100%" :height "150px"
                                         :background "linear-gradient(to top, rgba(0,0,0,0), rgba(0,0,0,1))"}})
@@ -283,7 +295,7 @@
                                         :backgroundRepeat "no-repeat"
                                         :backgroundColour "blue"
                                         :backgroundPosition "50% 50%"
-                                        :marginTop "-300px"}})
+                                        :marginTop "0px"}})
 
               (dom/div #js {:style #js {:position "absolute" :width "100%" :height "150px"
                                         :background "linear-gradient(to top, rgba(0,0,0,0), rgba(0,0,0,1))"}})
