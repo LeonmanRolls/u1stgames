@@ -332,10 +332,10 @@
         "/fbgames"
         {:handler (fn [all-games]
                     (let [read-games (cljs.reader/read-string all-games)]
+                      (println "all-games: " all-games)
                       (om/transact!
                         games
                         (fn [games]
-                          #_(println "conj: " (conj games read-games))
                           (into games read-games)))))}))
 
     om/IRender
