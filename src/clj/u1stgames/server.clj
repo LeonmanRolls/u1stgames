@@ -34,9 +34,12 @@
    :body (pr-str data)})
 
 (defn fb-games []
-  (filter
-    #(not (= "" (:appid %)))
-    (j/query mysql-db ["SELECT title,appid,ytvideo from games"])))
+  (->>
+    (filter
+      #(not (= "" (:appid %)))
+      (j/query mysql-db ["SELECT title,appid,ytvideo,pics from games"]))
+    (map
+      #(update-in % [:pics] (fn [x] (clojure.string/split x #","))))))
 
 (defn app-data [appid]
   (let []
@@ -55,23 +58,35 @@
 (defn update-all-data []
   (reset!
     all-data-atom
-    (map
-      (fn [{:keys [title appid ytvideo] :as data}]
-        (println title)
-        (merge
-          (try
-            (flattened-app-data appid)
-            (catch Exception e (do
-                                 (str "caught exception: " (.getMessage e))
-                                 {})))
-          data))
-      (fb-games))))
+    (->
+      (map
+        (fn [{:keys [title appid ytvideo] :as data}]
+          (println title)
+          (merge
+            (try
+              (flattened-app-data appid)
+              (catch Exception e (do
+                                   (str "caught exception: " (.getMessage e))
+                                   {})))
+            data
+            {:type :game}))
+        (fb-games)))))
 (update-all-data)
+
+(def ffbgames (take 5 (fb-games)))
 
 (comment
   (app-data "1557991804501532")
   (flattened-app-data "1557991804501532")
   (fb-games)
+  (take 5 (fb-games))
+  ffbgames
+  (clojure.string/split "a,b,c" #",")
+  (clojure.string/split "" #",")
+
+  (map
+    #(update-in % [:pics] (fn [x] (clojure.string/split x #",")))
+    ffbgames)
 
   @all-data-atom)
 

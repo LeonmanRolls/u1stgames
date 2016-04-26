@@ -1,4 +1,16 @@
+@font-face {
+   font-family: CircularStd-Book;
+   src: url(/fonts/CircularStd-Book.otf);
+}
+
+@font-face {
+   font-family: CircularStd-Book;
+   src: url(/fonts/CircularStd-Bold.otf);
+   font-weight: bold;
+}
+
 html {
+  font-family: CircularStd-Book;
     height: 100%;
      background:
     linear-gradient(
@@ -17,6 +29,8 @@ body {
     margin: 0px;
 }
 
+
+
 ul {
     list-style: none;
     padding: 0px;
@@ -28,13 +42,21 @@ ul {
 
 li {
     list-style-type: none;
-    width: 250px;
-    height: 250px;
+    width: 300px;
+    height: 300px;
     display: inline-block;
     margin: 2px;
     position: relative;
     overflow: hidden;
     }
+
+li p {
+font-weight: bold;
+font-size: 16px;
+position: absolute;
+margin: 0;
+color: white;
+}
 
 video {
     min-width: 300px;
