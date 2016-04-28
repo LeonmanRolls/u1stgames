@@ -156,7 +156,18 @@
        :hover-uid (u/uid-gen "hover")
        :bg-cover-uid (u/uid-gen "bgcover")
        :player {}
-       :slider-id (u/uid-gen "slider")})
+       :slider-id (u/uid-gen "slider")
+       :unslider []})
+
+    om/IDidUpdate
+    (did-update [_ _ _]
+      (let [{:keys [unslider]} (om/get-state owner)]
+        #_(println "did update")
+        (->
+          (.data unslider "unslider")
+          (.init  #js {:autoplay true
+                       :speed 300
+                       :delay 800}))))
 
     om/IDidMount
     (did-mount [_]
@@ -171,6 +182,8 @@
             unslider (.unslider (js/$ (str "#" slider-id)) #js {:autoplay true
                                                                 :speed 300
                                                                 :delay 800})]
+
+        (om/set-state! owner :unslider unslider)
 
         (.unslider unslider "stop")
 
@@ -206,7 +219,7 @@
 
 
     om/IRenderState
-    (render-state [_ {:keys [uid hover-uid bg-cover-uid player slider-id]}]
+    (render-state [_ {:keys [uid hover-uid bg-cover-uid player slider-id unslider]}]
       (let []
         (dom/li #js {:id hover-uid
                      :style #js  {:backgroundSize "cover"
