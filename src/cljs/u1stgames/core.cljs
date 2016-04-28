@@ -162,7 +162,6 @@
     om/IDidUpdate
     (did-update [_ _ _]
       (let [{:keys [unslider]} (om/get-state owner)]
-        #_(println "did update")
         (->
           (.data unslider "unslider")
           (.init  #js {:autoplay true
