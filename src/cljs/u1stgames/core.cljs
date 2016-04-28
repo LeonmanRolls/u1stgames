@@ -11,6 +11,8 @@
 
 (def like-box-string "<div class=\"fb-page\" data-href=\"https://www.facebook.com/U1stGamesOfficial/\" data-tabs=\"timeline\" data-width=\"300\" data-height=\"300\" data-small-header=\"true\" data-adapt-container-width=\"true\" data-hide-cover=\"false\" data-show-facepile=\"true\"><div class=\"fb-xfbml-parse-ignore\"><blockquote cite=\"https://www.facebook.com/U1stGamesOfficial/\"><a href=\"https://www.facebook.com/U1stGamesOfficial/\">U1st Games</a></blockquote></div></div>")
 
+(def ad-string "")
+
 (def yt-init-chan (chan))
 (def yt-init-pub (pub yt-init-chan :msg-type))
 
@@ -28,150 +30,23 @@
 (defn ^:export youtubeReady []
   (put! yt-init-chan {:msg-type :init}))
 
+(def base-app-data (atom []))
+
 (def
   app-state
-  (atom {:games [{:type :home :logo "/img/u1st_logo_square.png"}]}))
+  (atom {:home {:logo "/img/u1st_logo_square.png"}
+         :sort {}
+         :games []}))
 
 (comment
-
   (GET "/fbgames" {:handler handler})
-
-  (fn []
-
-
-    )
-
   (.api js/FB "/1557991804501532" "get" #js {} #(println %))
-
+  @base-app-data
+  (sort-by :monthly_active_users @base-app-data)
   )
 
 
-(defn block-li [{:keys [picture]} owner]
- (reify
-  om/IRender
-   (render [_]
-    (dom/li #js {:style #js {:backgroundImage (str "url(" picture ")")
-                             :backgroundSize "cover"
-                             :backgroundRepeat "no-repeat"}}))))
-
-(defmulti img-block (fn [data owner] (:type data)))
-
-(defmethod img-block :game
-  [{:keys [title appid subcategory picture monthly_active_users pics ytvideo] :as data} owner]
-  (reify
-    om/IInitState
-    (init-state [_]
-      {:uid (u/uid-gen "yt")
-       :hover-uid (u/uid-gen "hover")
-       :bg-cover-uid (u/uid-gen "bgcover")
-       :player {}
-       :slider-id (u/uid-gen "slider")})
-
-    om/IDidMount
-    (did-mount [_]
-      (let [ytid (if
-                   (empty? ytvideo)
-                   "scPbcEUCiec"
-                   (->
-                     (nth (clojure.string/split ytvideo #"=") 1)
-                     (clojure.string/split #"&")
-                     (first)))
-            {:keys [uid hover-uid bg-cover-uid player slider-id]} (om/get-state owner)
-            unslider (.unslider (js/$ (str "#" slider-id)) #js {:autoplay true})]
-
-        (.unslider unslider "stop")
-
-        (.hover
-            (js/$ (str "#" hover-uid))
-            (fn []
-              #_(.animate
-                  (js/$ (str "#" bg-cover-uid))
-                  #js {:marginTop "-300px"} 200)
-              (.unslider unslider "start")
-                #_(om/set-state!
-                    owner
-                    :player
-                    (new js/YT.Player uid #js {:height "300"
-                                               :width "300"
-                                               :videoId ytid
-                                               :playerVars #js {:controls 0
-                                                                :showinfo 0
-                                                                :modestbranding 1
-                                                                :autoplay 1
-                                                                :loop 1
-                                                                :rel 0}
-                                               :events #js {:onReady #(println "ready")
-                                                            :onStateChange #(println "state change")}})))
-
-            (fn [x]
-              #_(.animate
-                (js/$ (str "#" bg-cover-uid))
-                #js {:marginTop "0px"} 200)
-              (.unslider unslider "stop")
-              #_(om/get-state owner :unslider)
-              #_(.destroy (om/get-state owner :player))))))
-
-    om/IRenderState
-    (render-state [_ {:keys [uid hover-uid bg-cover-uid player slider-id]}]
-      (let []
-        (dom/li #js {:id hover-uid
-                     :style #js  {:backgroundSize "cover"
-                                  :backgroundRepeat "no-repeat"}}
-                (dom/div #js {:id bg-cover-uid
-                              :className "bg-cover"
-                              :style #js {:backgroundImage (str "url(" (first pics) ")")
-                                          :backgroundSize "cover"
-                                          :backgroundRepeat "no-repeat"
-                                          :backgroundColour "blue"
-                                          :backgroundPosition "50% 50%"
-                                          :marginTop "-300px"}})
-
-                (dom/div #js {:style #js {:position "absolute" :width "100%" :height "150px"
-                                          :background "linear-gradient(to top, rgba(0,0,0,0), rgba(0,0,0,1))"}})
-
-                (dom/div #js {:style #js {:position "absolute" :width "100%" :height "150px"
-                                          :bottom "0px"
-                                          :background "linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,1))"}})
-
-                (dom/p #js {:style #js {:top "5px" :left "5px" :width "200px"
-                                        :textAlign "left" :height "25px" :overflow "hidden"
-                                        :textOverflow "ellipsis"}}
-                       title)
-
-                (dom/p #js {:style #js {:top "5px" :right "5px"}} subcategory)
-                (dom/p #js {:style #js {:bottom "5px" :left "5px"}}
-                       "Users: " monthly_active_users)
-
-                (dom/a #js {:href (str "https://apps.facebook.com/" appid) :target "_blank"}
-                       (dom/button #js {:style #js {:position "absolute" :bottom "5px" :right "5px"
-                                                    :background "transparent" :color "white"
-                                                    :border "1px solid white" :padding "5px"
-                                                    :width "70px" :textTransform "uppercase"
-                                                    :fontWeight "bold" :cursor "crosshair"}}
-                                   "Play "
-                                   (dom/i #js {:className "fa fa-gamepad" :ariaHidden "true"})))
-
-                ;Image slider
-
-                (dom/div #js{:id slider-id}
-                         (dom/ul nil
-                                 (om/build-all
-                                   (fn [data owner]
-                                     (reify
-                                       om/IRender
-                                       (render [_]
-                                         (dom/li nil
-                                                 (dom/img #js {:src data :width "300"
-                                                               :style #js {:position "relative"
-                                                                           :top "50%"
-                                                                           :transform "translateY(-50%)"}})))))
-                                   pics)))
-
-                #_(dom/div #js {:id uid})
-
-                )))))
-
-(defmethod img-block :home
+(defn home-block
   [{:keys [logo] :as data} owner]
   (reify
     om/IInitState
@@ -221,25 +96,177 @@
                                         :bottom "0px"
                                         :background "linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,1))"}})
 
-              (dom/div #js {:dangerouslySetInnerHTML #js {:__html like-box-string}})
+              (dom/div #js {:style #js {:height "300px"}
+                            :dangerouslySetInnerHTML #js {:__html like-box-string}})))))
 
-              #_(dom/p #js {:style #js {:top "5px" :left "5px" :width "200px"
+(defn sort-block
+  [games owner]
+  (reify
+    om/IRender
+    (render [_]
+      (dom/li nil
+              (dom/div #js {:style #js {:color "black"
+                                        :fontSize "20px"}} "sort by text")
+              (dom/button
+                #js {:onClick (fn [x]
+                                (om/transact!
+                                  games
+                                  (fn [games]
+                                    (sort-by
+                                      (fn [x]
+                                        (int (:monthly_active_users x)))
+                                      >
+                                      games))))}
+                "Users")
+              (dom/button
+                #js {:onClick (fn [x]
+                                (om/transact!
+                                  games
+                                  (fn [games]
+                                    (sort-by
+                                      :title
+                                      games))))}
+                "Alphabetically")))))
+
+
+(defmulti img-block (fn [data owner] (:type data)))
+
+(defmethod img-block :advert
+  [{:keys [adz] :as data} owner]
+  (reify
+    om/IRenderState
+    (render-state [_ {:keys [uid hover-uid bg-cover-uid player]}]
+      (dom/li nil
+              (dom/div #js {:dangerouslySetInnerHTML #js {:__html  "
+                                                <ins class=\"adsbygoogle\"
+                                                style=\"display:inline-block;width:125px;height:125px\"
+                                                data-ad-client=\"ca-pub-2815558012050620\"
+                                                data-ad-slot=\"8353125252\"></ins>
+                                                " }})))))
+
+
+
+
+(defmethod img-block :game
+  [{:keys [title appid subcategory picture monthly_active_users pics ytvideo] :as data} owner]
+  (reify
+    om/IInitState
+    (init-state [_]
+      {:uid (u/uid-gen "yt")
+       :hover-uid (u/uid-gen "hover")
+       :bg-cover-uid (u/uid-gen "bgcover")
+       :player {}
+       :slider-id (u/uid-gen "slider")})
+
+    om/IDidMount
+    (did-mount [_]
+      (let [ytid (if
+                   (empty? ytvideo)
+                   "scPbcEUCiec"
+                   (->
+                     (nth (clojure.string/split ytvideo #"=") 1)
+                     (clojure.string/split #"&")
+                     (first)))
+            {:keys [uid hover-uid bg-cover-uid player slider-id]} (om/get-state owner)
+            unslider (.unslider (js/$ (str "#" slider-id)) #js {:autoplay true
+                                                                :speed 300
+                                                                :delay 800})]
+
+        (.unslider unslider "stop")
+
+        (.hover
+            (js/$ (str "#" hover-uid))
+            (fn []
+              (.animate
+                  (js/$ (str "#" bg-cover-uid))
+                  #js {:marginTop "-300px"} 200)
+              (.unslider unslider "start")
+                #_(om/set-state!
+                    owner
+                    :player
+                    (new js/YT.Player uid #js {:height "300"
+                                               :width "300"
+                                               :videoId ytid
+                                               :playerVars #js {:controls 0
+                                                                :showinfo 0
+                                                                :modestbranding 1
+                                                                :autoplay 1
+                                                                :loop 1
+                                                                :rel 0}
+                                               :events #js {:onReady #(println "ready")
+                                                            :onStateChange #(println "state change")}})))
+
+            (fn [x]
+              (.animate
+                (js/$ (str "#" bg-cover-uid))
+                #js {:marginTop "0px"} 200)
+              (.unslider unslider "stop")
+              #_(om/get-state owner :unslider)
+              #_(.destroy (om/get-state owner :player))))))
+
+
+    om/IRenderState
+    (render-state [_ {:keys [uid hover-uid bg-cover-uid player slider-id]}]
+      (let []
+        (dom/li #js {:id hover-uid
+                     :style #js  {:backgroundSize "cover"
+                                  :backgroundRepeat "no-repeat"}}
+                (dom/div #js {:id bg-cover-uid
+                              :className "bg-cover"
+                              :style #js {:backgroundImage (str "url(" (first pics) ")")
+                                          :backgroundSize "cover"
+                                          :backgroundRepeat "no-repeat"
+                                          :backgroundColour "blue"
+                                          :backgroundPosition "50% 50%"
+                                          :marginTop "0px"}})
+
+                (dom/div #js {:style #js {:position "absolute" :width "100%" :height "50px"
+                                          :background "linear-gradient(to top, rgba(0,0,0,0), rgba(0,0,0,1))"}})
+
+                (dom/div #js {:style #js {:position "absolute" :width "100%" :height "50px"
+                                          :bottom "0px"
+                                          :background "linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,1))"}})
+
+                (dom/p #js {:style #js {:top "5px" :left "5px" :width "200px"
                                         :textAlign "left" :height "25px" :overflow "hidden"
                                         :textOverflow "ellipsis"}}
                        title)
 
-              #_(dom/p #js {:style #js {:top "5px" :right "5px"}} subcategory)
-              #_(dom/p #js {:style #js {:bottom "5px" :left "5px"}}
+                (dom/p #js {:style #js {:top "5px" :right "5px"}} subcategory)
+                (dom/p #js {:style #js {:bottom "5px" :left "5px"}}
                        "Users: " monthly_active_users)
 
-              #_(dom/a #js {:href (str "https://apps.facebook.com/" appid) :target "_blank"}
+                (dom/a #js {:href (str "https://apps.facebook.com/" appid) :target "_blank"}
                        (dom/button #js {:style #js {:position "absolute" :bottom "5px" :right "5px"
                                                     :background "transparent" :color "white"
                                                     :border "1px solid white" :padding "5px"
                                                     :width "70px" :textTransform "uppercase"
                                                     :fontWeight "bold" :cursor "crosshair"}}
                                    "Play "
-                                   (dom/i #js {:className "fa fa-gamepad" :ariaHidden "true"})))))))
+                                   (dom/i #js {:className "fa fa-gamepad" :ariaHidden "true"})))
+
+                ;Image slider
+
+                (dom/div #js{:id slider-id}
+                         (dom/ul nil
+                                 (om/build-all
+                                   (fn [data owner]
+                                     (reify
+                                       om/IRender
+                                       (render [_]
+                                         (dom/li nil
+                                                 (dom/img #js {:src data :width "300"
+                                                               :style #js {:zIndex "-100"
+                                                                           :position "relative"
+                                                                           :top "50%"
+                                                                           :transform "translateY(-50%)"}})))))
+                                   (rest pics))))
+
+                #_(dom/div #js {:id uid})
+
+                )))))
+
+
 
 (defmethod img-block :default
   [{:keys [title appid subcategory picture monthly_active_users pics] :as data} owner]
@@ -325,7 +352,7 @@
                           "Play "
                           (dom/i #js {:className "fa fa-gamepad" :ariaHidden "true"})))))))
 
-(defn root-component [{:keys [games]} owner]
+(defn root-component [{:keys [home games]} owner]
   (reify
 
     om/IDidMount
@@ -335,7 +362,7 @@
         "/fbgames"
         {:handler (fn [all-games]
                     (let [read-games (reader/read-string all-games)]
-                      (println "all-games: " all-games)
+                      (reset! base-app-data read-games)
                       (om/transact!
                         games
                         (fn [games]
@@ -344,9 +371,9 @@
     om/IRender
     (render [_]
       (dom/ul nil
-
-              (om/build-all img-block games)
-              (om/build-all block-li games)))))
+              (om/build home-block home)
+              (om/build sort-block games)
+              (om/build-all img-block games)))))
 
 (om/root
  root-component
