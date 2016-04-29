@@ -66,7 +66,7 @@
  (:appid (first q-result))
  (numeric? (:appid (first q-result)))
  (type (:appid (first q-result)))
-
+ (fb-games)
  )
 
 (defn app-data [appid]

@@ -9,6 +9,8 @@
 
 (enable-console-print!)
 
+(def page-size 20)
+
 (def like-box-string "<div class=\"fb-page\" data-href=\"https://www.facebook.com/U1stGamesOfficial/\" data-tabs=\"timeline\" data-width=\"300\" data-height=\"300\" data-small-header=\"true\" data-adapt-container-width=\"true\" data-hide-cover=\"false\" data-show-facepile=\"true\"><div class=\"fb-xfbml-parse-ignore\"><blockquote cite=\"https://www.facebook.com/U1stGamesOfficial/\"><a href=\"https://www.facebook.com/U1stGamesOfficial/\">U1st Games</a></blockquote></div></div>")
 
 (def ad-string "")
@@ -37,6 +39,9 @@
   (atom {:home {:id (u/uid-gen "logo") :logo "/img/u1st_logo_square.png"}
          :sort {:id (u/uid-gen "sortby")}
          :games []}))
+
+#_(defn games-ref []
+  (om/ref-cursor (:games (om/root-cursor app-state))))
 
 (comment
   (GET "/fbgames" {:handler handler})
@@ -181,7 +186,7 @@
         (.hover
             (js/$ (str "#" hover-uid))
             (fn []
-              #_(.animate
+              (.animate
                   (js/$ (str "#" bg-cover-uid))
                   #js {:marginTop "-300px"} 200)
               (.unslider unslider "start")
@@ -201,7 +206,7 @@
                                                             :onStateChange #(println "state change")}})))
 
             (fn [x]
-              #_(.animate
+              (.animate
                 (js/$ (str "#" bg-cover-uid))
                 #js {:marginTop "0px"} 200)
               (.unslider unslider "stop")
@@ -252,7 +257,7 @@
                 ;Image slider
 
                 (dom/div #js{:id slider-id}
-                         #_(apply dom/ul nil
+                         (apply dom/ul nil
                                  (om/build-all
                                    (fn [data owner]
                                      (reify
@@ -358,17 +363,26 @@
                           "Play "
                           (dom/i #js {:className "fa fa-gamepad" :ariaHidden "true"})))))))
 
+
 (defn load-more [games]
-  (let [next-12 (take 12 @base-app-data)]
+  (let [next-12 (take page-size @base-app-data)]
     (when (not (empty? next-12))
-      (swap! base-app-data (fn [x] (drop 12 x)))
+      (swap! base-app-data (fn [x] (drop page-size x)))
       (om/transact!
         games
         (fn [games]
           (into games next-12))))))
 
+(defn load-more-export [games]
+  (defn ^:export loadMoreNow []
+   (load-more games)))
+
 (defn root-component [{:keys [home games]} owner]
   (reify
+
+    om/IWillMount
+    (will-mount [_]
+     (load-more-export games))
 
     om/IDidMount
     (did-mount [_]
@@ -377,11 +391,11 @@
         "/fbgames"
         {:handler (fn [all-games]
                     (let [read-games (reader/read-string all-games)]
-                      (reset! base-app-data (drop 12 read-games))
+                      (reset! base-app-data (drop page-size read-games))
                       (om/transact!
                         games
                         (fn [games]
-                          (into games (take 12 read-games))))))}))
+                          (into games (take page-size read-games))))))}))
 
     om/IRender
     (render [_]
@@ -389,13 +403,7 @@
                (apply dom/ul nil
               #_(om/build home-block home {:key :id})
               #_(om/build sort-block games {:key :id})
-              (om/build-all img-block games {:key :id}))
-               (dom/button
-                 #js {:onClick (fn [x] (load-more games))}
-                           "Load more games")
-
-               )
-      )))
+              (om/build-all img-block games {:key :id}))))))
 
 (om/root
  root-component
