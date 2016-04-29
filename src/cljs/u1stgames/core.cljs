@@ -34,8 +34,8 @@
 
 (def
   app-state
-  (atom {:home {:logo "/img/u1st_logo_square.png"}
-         :sort {}
+  (atom {:home {:id (u/uid-gen "logo") :logo "/img/u1st_logo_square.png"}
+         :sort {:id (u/uid-gen "sortby")}
          :games []}))
 
 (comment
@@ -104,7 +104,7 @@
   (reify
     om/IRender
     (render [_]
-      (dom/li nil
+      (dom/li {:id (u/uid-gen "sortblock")}
               (dom/div #js {:style #js {:color "black"
                                         :fontSize "20px"}} "sort by text")
               (dom/button
@@ -123,9 +123,12 @@
                                 (om/transact!
                                   games
                                   (fn [games]
-                                    (sort-by
+                                    (vec
+                                      (sort-by
                                       :title
-                                      games))))}
+                                      games)
+                                      )
+                                    )))}
                 "Alphabetically")))))
 
 
@@ -159,15 +162,6 @@
        :slider-id (u/uid-gen "slider")
        :unslider []})
 
-    om/IDidUpdate
-    (did-update [_ _ _]
-      (let [{:keys [unslider]} (om/get-state owner)]
-        (->
-          (.data unslider "unslider")
-          (.init  #js {:autoplay true
-                       :speed 300
-                       :delay 800}))))
-
     om/IDidMount
     (did-mount [_]
       (let [ytid (if
@@ -182,14 +176,12 @@
                                                                 :speed 300
                                                                 :delay 800})]
 
-        (om/set-state! owner :unslider unslider)
-
         (.unslider unslider "stop")
 
         (.hover
             (js/$ (str "#" hover-uid))
             (fn []
-              (.animate
+              #_(.animate
                   (js/$ (str "#" bg-cover-uid))
                   #js {:marginTop "-300px"} 200)
               (.unslider unslider "start")
@@ -209,7 +201,7 @@
                                                             :onStateChange #(println "state change")}})))
 
             (fn [x]
-              (.animate
+              #_(.animate
                 (js/$ (str "#" bg-cover-uid))
                 #js {:marginTop "0px"} 200)
               (.unslider unslider "stop")
@@ -225,7 +217,7 @@
                                   :backgroundRepeat "no-repeat"}}
                 (dom/div #js {:id bg-cover-uid
                               :className "bg-cover"
-                              :style #js {:backgroundImage (str "url(" (first pics) ")")
+                              :style #js {:backgroundImage (str "url(" (:url (first pics)) ")")
                                           :backgroundSize "cover"
                                           :backgroundRepeat "no-repeat"
                                           :backgroundColour "blue"
@@ -260,19 +252,21 @@
                 ;Image slider
 
                 (dom/div #js{:id slider-id}
-                         (dom/ul nil
+                         #_(apply dom/ul nil
                                  (om/build-all
                                    (fn [data owner]
                                      (reify
                                        om/IRender
                                        (render [_]
                                          (dom/li nil
-                                                 (dom/img #js {:src data :width "300"
+                                                 (dom/img #js {:src (:url data) :width "300"
                                                                :style #js {:zIndex "-100"
                                                                            :position "relative"
                                                                            :top "50%"
                                                                            :transform "translateY(-50%)"}})))))
-                                   (rest pics))))
+                                   (rest pics)
+                                   {:key :uid}
+                                   )))
 
                 #_(dom/div #js {:id uid})
 
@@ -382,10 +376,10 @@
 
     om/IRender
     (render [_]
-      (dom/ul nil
-              (om/build home-block home)
-              (om/build sort-block games)
-              (om/build-all img-block games)))))
+      (apply dom/ul nil
+              #_(om/build home-block home {:key :id})
+              #_(om/build sort-block games {:key :id})
+              (om/build-all img-block games {:key :id})))))
 
 (om/root
  root-component

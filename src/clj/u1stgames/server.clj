@@ -15,6 +15,17 @@
   (:use ring.middleware.edn)
   (:gen-class))
 
+(defn new-uuid []
+  (str (java.util.UUID/randomUUID)))
+
+(defn numeric? [s]
+  (if-let [s (seq s)]
+    (let [s (if (= (first s) \-) (next s) s)
+          s (drop-while #(Character/isDigit %) s)
+          s (if (= (first s) \.) (next s) s)
+          s (drop-while #(Character/isDigit %) s)]
+      (empty? s))))
+
 (def graph-base-string "https://graph.facebook.com/1557991804501532?fields=picture&amp;access_token=240902319579455f6c7c8504a5566f0c491c79b46c8bba8")
 
 (defn graph-app-string [appid]
@@ -36,10 +47,27 @@
 (defn fb-games []
   (->>
     (filter
-      #(not (= "" (:appid %)))
+      #(do
+        #_(not (= "" (:appid %)))
+        (numeric? (:appid %))
+        )
       (j/query mysql-db ["SELECT title,appid,ytvideo,pics from games"]))
     (map
-      #(update-in % [:pics] (fn [x] (clojure.string/split x #","))))))
+      #(update-in % [:pics] (fn [x]
+                              (map
+                                (fn [url] {:url url :uid (new-uuid)})
+                                (clojure.string/split x #",") ))))))
+
+(def q-result (j/query mysql-db ["SELECT title,appid,ytvideo,pics from games"]))
+
+(comment
+ (first q-result)
+ (:appid (first q-result))
+ (:appid (first q-result))
+ (numeric? (:appid (first q-result)))
+ (type (:appid (first q-result)))
+
+ )
 
 (defn app-data [appid]
   (let []
