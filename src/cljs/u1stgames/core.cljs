@@ -358,6 +358,15 @@
                           "Play "
                           (dom/i #js {:className "fa fa-gamepad" :ariaHidden "true"})))))))
 
+(defn load-more [games]
+  (let [next-12 (take 12 @base-app-data)]
+    (when (not (empty? next-12))
+      (swap! base-app-data (fn [x] (drop 12 x)))
+      (om/transact!
+        games
+        (fn [games]
+          (into games next-12))))))
+
 (defn root-component [{:keys [home games]} owner]
   (reify
 
@@ -368,18 +377,25 @@
         "/fbgames"
         {:handler (fn [all-games]
                     (let [read-games (reader/read-string all-games)]
-                      (reset! base-app-data read-games)
+                      (reset! base-app-data (drop 12 read-games))
                       (om/transact!
                         games
                         (fn [games]
-                          (into games read-games)))))}))
+                          (into games (take 12 read-games))))))}))
 
     om/IRender
     (render [_]
-      (apply dom/ul nil
+      (dom/div nil
+               (apply dom/ul nil
               #_(om/build home-block home {:key :id})
               #_(om/build sort-block games {:key :id})
-              (om/build-all img-block games {:key :id})))))
+              (om/build-all img-block games {:key :id}))
+               (dom/button
+                 #js {:onClick (fn [x] (load-more games))}
+                           "Load more games")
+
+               )
+      )))
 
 (om/root
  root-component
