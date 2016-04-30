@@ -87,36 +87,51 @@
   (reset!
     all-data-atom
     (->
-      (map
-        (fn [{:keys [title appid ytvideo] :as data}]
-          (println title)
-          (merge
-            (try
-              (flattened-app-data appid)
-              (catch Exception e (do
-                                   (str "caught exception: " (.getMessage e))
-                                   {})))
-            data
-            {:type :game}))
-        (fb-games)))))
+        (map
+          (fn [{:keys [title appid ytvideo] :as data}]
+            (println title)
+            (merge
+              (try
+                (flattened-app-data appid)
+                (catch Exception e (do
+                                     (str "caught exception: " (.getMessage e))
+                                     {})))
+              data
+              {:type :game}))
+          (fb-games)))))
 (update-all-data)
 
-(def ffbgames (take 5 (fb-games)))
+(def test-atom (atom []))
+(def test-sorted (atom []))
 
 (comment
-  (app-data "1557991804501532")
-  (flattened-app-data "1557991804501532")
-  (fb-games)
-  (take 5 (fb-games))
-  ffbgames
-  (clojure.string/split "a,b,c" #",")
-  (clojure.string/split "" #",")
 
-  (map
-    #(update-in % [:pics] (fn [x] (clojure.string/split x #",")))
-    ffbgames)
+  (sort-by
+      (fn [x]
+        (int (:monthly_active_users x)))
+      >
+      @test-atom
+      )
 
-  @all-data-atom)
+  (Integer. (:monthly_active_users (first @test-atom)))
+  (Integer. "")
+
+  (reset! test-atom (->
+                      (map
+                        (fn [{:keys [title appid ytvideo] :as data}]
+                          (println title)
+                          (merge
+                            (try
+                              (flattened-app-data appid)
+                              (catch Exception e (do
+                                                   (str "caught exception: " (.getMessage e))
+                                                   {})))
+                            data
+                            {:type :game}))
+                        (fb-games))))
+
+
+  )
 
 (defroutes routes
            (GET "/" _

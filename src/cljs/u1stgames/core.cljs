@@ -390,12 +390,17 @@
       (GET
         "/fbgames"
         {:handler (fn [all-games]
-                    (let [read-games (reader/read-string all-games)]
-                      (reset! base-app-data (drop page-size read-games))
+                    (let [read-games (reader/read-string all-games)
+                          sorted-games (sort-by
+                                         (fn [x]
+                                           (int (:monthly_active_users x)))
+                                         >
+                                         read-games)]
+                      (reset! base-app-data (drop page-size sorted-games))
                       (om/transact!
                         games
                         (fn [games]
-                          (into games (take page-size read-games))))))}))
+                          (into games (take page-size sorted-games))))))}))
 
     om/IRender
     (render [_]
