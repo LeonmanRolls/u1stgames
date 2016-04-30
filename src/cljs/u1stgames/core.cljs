@@ -250,7 +250,8 @@
                                                     :background "transparent" :color "white"
                                                     :border "1px solid white" :padding "5px"
                                                     :width "70px" :textTransform "uppercase"
-                                                    :fontWeight "bold" :cursor "crosshair"}}
+                                                    :fontWeight "bold" :cursor "crosshair"
+                                                    :zIndex "50"}}
                                    "Play "
                                    (dom/i #js {:className "fa fa-gamepad" :ariaHidden "true"})))
 
