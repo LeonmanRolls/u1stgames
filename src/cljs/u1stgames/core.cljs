@@ -382,7 +382,7 @@
 
     om/IWillMount
     (will-mount [_]
-     (load-more-export games))
+      (load-more-export games))
 
     om/IDidMount
     (did-mount [_]
@@ -406,9 +406,9 @@
     (render [_]
       (dom/div nil
                (apply dom/ul nil
-              #_(om/build home-block home {:key :id})
-              #_(om/build sort-block games {:key :id})
-              (om/build-all img-block games {:key :id}))))))
+                      (om/build home-block home {:key :id})
+                      #_(om/build sort-block games {:key :id})
+                      (om/build-all img-block games {:key :id}))))))
 
 (om/root
  root-component

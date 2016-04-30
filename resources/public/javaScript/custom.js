@@ -1,6 +1,5 @@
  $(window).scroll(function() {
-   if($(window).scrollTop() + $(window).height() == $(document).height()) {
-       //alert("bottom!");
+   if($(window).scrollTop() + ($(window).height() + 300) > $(document).height()) {
        u1stgames.core.loadMoreNow();
    }
 });
