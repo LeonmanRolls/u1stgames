@@ -21,7 +21,6 @@ html {
       -moz-background-size: cover;
       -o-background-size: cover;
       background-size: cover;
-      filter: blur(20px);
 }
 
 body {
