@@ -50,7 +50,6 @@
   (sort-by :monthly_active_users @base-app-data)
   )
 
-
 (defn home-block
   [{:keys [logo] :as data} owner]
   (reify
@@ -401,7 +400,8 @@
                       (om/transact!
                         games
                         (fn [games]
-                          (into games (take page-size sorted-games))))))}))
+                          (into games (take page-size sorted-games))))
+                     (js/biggerInitial)))}))
 
     om/IRender
     (render [_]
