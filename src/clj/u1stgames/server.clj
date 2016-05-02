@@ -89,7 +89,6 @@
     (->
         (map
           (fn [{:keys [title appid ytvideo] :as data}]
-            (println title)
             (merge
               (try
                 (flattened-app-data appid)
