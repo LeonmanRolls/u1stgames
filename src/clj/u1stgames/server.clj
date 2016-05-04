@@ -58,7 +58,7 @@
                                 (fn [url] {:url url :uid (new-uuid)})
                                 (clojure.string/split x #",") ))))))
 
-(def q-result (j/query mysql-db ["SELECT title,appid,ytvideo,pics from games"]))
+#_(def q-result (j/query mysql-db ["SELECT title,appid,ytvideo,pics from games"]))
 
 (comment
  (first q-result)
