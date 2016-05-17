@@ -50,26 +50,22 @@
 (defn fb-games []
   (->>
     (filter
-      #(do
-        #_(not (= "" (:appid %)))
-        (numeric? (:appid %))
-        )
-      (j/query mysql-db ["SELECT title,appid,ytvideo,pics from games"]))
+      #(numeric? (:appid %))
+      (j/query mysql-db ["SELECT title,appid,ytvideo,pics from test_schema.games"]))
+    (filter
+      #(not= nil (:pics %)))
     (map
       #(update-in % [:pics] (fn [x]
                               (map
                                 (fn [url] {:url url :uid (new-uuid)})
-                                (clojure.string/split x #",") ))))))
+                                (clojure.string/split x #",")))))))
 
 #_(def q-result (j/query mysql-db ["SELECT title,appid,ytvideo,pics from games"]))
 
 (comment
- (first q-result)
- (:appid (first q-result))
- (:appid (first q-result))
- (numeric? (:appid (first q-result)))
- (type (:appid (first q-result)))
- (fb-games)
+
+  (j/query mysql-db ["SELECT title,appid,ytvideo,pics from test_schema.games"])
+
  )
 
 (defn app-data [appid]
