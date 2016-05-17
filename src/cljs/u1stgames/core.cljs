@@ -387,6 +387,12 @@
     om/IDidMount
     (did-mount [_]
 
+      (comment
+       (GET
+        "/fbgames"
+        {:handler (fn [result]
+                    (println result))}))
+
       (GET
         "/fbgames"
         {:handler (fn [all-games]

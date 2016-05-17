@@ -34,10 +34,13 @@
     appid
     "?fields=picture,subcategory,monthly_active_users&amp;access_token=240902319579455f6c7c8504a5566f0c491c79b46c8bba8"))
 
-(def mysql-db {:subprotocol "mysql"
-               :subname "//173.230.153.62:3306/fortunecookies"
-               :user "root"
-               :password "naLdC28LCyAMVqq2"})
+(def mysql-db
+  (or
+    (System/getenv "DATABASE_URL")
+    {:subprotocol "postgresql"
+     :subname "//localhost:5432/fortunecookies"
+     :user "postgres"
+     :password "1fishy4me"}))
 
 (defn generate-response [data & [status]]
   {:status (or status 200)
@@ -89,6 +92,7 @@
     (->
         (map
           (fn [{:keys [title appid ytvideo] :as data}]
+            (println "title: " title)
             (merge
               (try
                 (flattened-app-data appid)
@@ -98,39 +102,9 @@
               data
               {:type :game}))
           (fb-games)))))
-(update-all-data)
 
 (def test-atom (atom []))
 (def test-sorted (atom []))
-
-(comment
-
-  (sort-by
-      (fn [x]
-        (int (:monthly_active_users x)))
-      >
-      @test-atom
-      )
-
-  (Integer. (:monthly_active_users (first @test-atom)))
-  (Integer. "")
-
-  (reset! test-atom (->
-                      (map
-                        (fn [{:keys [title appid ytvideo] :as data}]
-                          (println title)
-                          (merge
-                            (try
-                              (flattened-app-data appid)
-                              (catch Exception e (do
-                                                   (str "caught exception: " (.getMessage e))
-                                                   {})))
-                            data
-                            {:type :game}))
-                        (fb-games))))
-
-
-  )
 
 (defroutes routes
            (GET "/" _
@@ -141,7 +115,12 @@
            (GET "/fbgames" []
              (generate-response @all-data-atom))
 
-           (resources "/"))
+           (resources "/")
+
+           (GET "*" _
+             {:status 200
+              :headers {"Content-Type" "text/html; charset=utf-8"}
+              :body (io/input-stream (io/resource "public/index.html"))}))
 
 (def http-handler
   (-> routes
@@ -152,6 +131,7 @@
 
 (defn -main [& [port]]
   (let [port (Integer. (or port (env :port) 10555))]
-    (run-jetty http-handler {:port port :join? false})))
+    (run-jetty http-handler {:port port :join? false})
+    (update-all-data)))
 
 

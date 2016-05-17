@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Leiningen: fogus/ring-edn:0.3.0">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.m2/repository/fogus/ring-edn/0.3.0/ring-edn-0.3.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
