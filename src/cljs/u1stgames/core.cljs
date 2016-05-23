@@ -4,7 +4,8 @@
             [u1stgames.utils :as u]
             [cljs.core.async :refer [put! chan <! >! pub sub unsub unsub-all close!]]
             [ajax.core :refer [GET POST]]
-            [cljs.reader :as reader])
+            [cljs.reader :as reader]
+            [cemerick.url :refer (url url-encode)])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (enable-console-print!)
@@ -38,17 +39,8 @@
   app-state
   (atom {:home {:id (u/uid-gen "logo") :logo "/img/u1st_logo_square.png"}
          :sort {:id (u/uid-gen "sortby")}
-         :games []}))
-
-#_(defn games-ref []
-  (om/ref-cursor (:games (om/root-cursor app-state))))
-
-(comment
-  (GET "/fbgames" {:handler handler})
-  (.api js/FB "/1557991804501532" "get" #js {} #(println %))
-  @base-app-data
-  (sort-by :monthly_active_users @base-app-data)
-  )
+         :games []
+         :products []}))
 
 (defn home-block
   [{:keys [logo] :as data} owner]
@@ -377,21 +369,46 @@
   (defn ^:export loadMoreNow []
    (load-more games)))
 
-(defn root-component [{:keys [home games]} owner]
+(defn get-products [shop-client collectionid c]
+  (->
+    shop-client
+    (.fetchQueryProducts #js {:collection_id collectionid})
+    (.then (fn [x] (put! c (js->clj x :keywordize-keys true))))
+    (.catch (fn [x] (println "request failed")))))
+
+(defn get-shop-client [] (js/buildShopClient))
+
+(defn raw->clj-products [products]
+  (->
+    products
+    (aget "tail")
+    (as-> xs (map #(aget % "attrs") xs))
+    (js->clj :keywordize-keys true)
+    (vec)))
+
+(defn root-component [{:keys [home games products]} owner]
   (reify
+
+    om/IInitState
+    (init-state [_]
+      {:init-route (:path (url (-> js/location .-href)))})
 
     om/IWillMount
     (will-mount [_]
-      (load-more-export games))
+      (load-more-export games)
+      (go
+        (let [p-chan (chan)
+              shop-client (get-shop-client)
+              testing (get-products shop-client 278313223 p-chan)
+              got-products (raw->clj-products (<! p-chan))]
+          #_(om/update! products got-products)
+          (println "got products: " (type got-products))
+          )
+        )
+      )
 
     om/IDidMount
     (did-mount [_]
-
-      (comment
-       (GET
-        "/fbgames"
-        {:handler (fn [result]
-                    (println result))}))
 
       (GET
         "/fbgames"
@@ -412,10 +429,76 @@
     om/IRender
     (render [_]
       (dom/div nil
-               (apply dom/ul nil
-                      (om/build home-block home {:key :id})
-                      #_(om/build sort-block games {:key :id})
-                      (om/build-all img-block games {:key :id}))))))
+               (let [path (:path (url (-> js/location .-href)))
+                     {:keys [init-route]} (om/get-state owner)]
+
+                 (println "location: " (:path (url (-> js/location .-href))))
+
+                 (cond
+                   (= init-route "/") (apply dom/ul nil
+                                       #_(om/build home-block home {:key :id})
+                                       #_(om/build sort-block games {:key :id})
+                                       (om/build-all img-block games {:key :id}))
+
+                   (= init-route "/shop") (apply dom/ul nil
+                                       (om/build home-block home {:key :id})
+                                       #_(om/build sort-block games {:key :id})
+                                       (om/build-all img-block games {:key :id}))
+
+                   :else (om/build home-block home {:key :id})))))))
+
+
+(comment
+
+  (def shop-client (js/buildShopClient))
+
+  (.fetchQueryProducts shop-client 278313223)
+
+  (defn <get-prodcuts )
+
+  (def t-c (chan))
+
+  (get-products (get-shop-client) 278313223 t-c)
+  (go (def products (js->clj (<! t-c) :keywordize-keys true)))
+  (go (def products (<! t-c)))
+
+  (def clj-products (raw->clj-products products))
+  clj-products
+  products
+
+  (first clj-products)
+
+  (type products)
+  (.dir js/console (->
+                     products
+                     (aget "tail")
+                     (as-> xs (map #(aget % "attrs") xs))
+                     (js->clj :keywordize-keys true)
+                     ))
+
+  (.dir js/console (->
+                     products
+                     (aget "tail")
+                     (aget 0)
+                     (aget "attrs")
+                     (aget "body_html")
+                     ))
+
+  (.dir js/console (first products))
+  (println (first products))
+  (js->clj (first products) :keywordize-keys true)
+
+  (go (.dir js/console (js->clj (<! t-c) :keywordize-keys true)))
+
+  (->
+    shop-client
+    (.fetchQueryProducts #js {:collection_id 278313223})
+    (.then (fn [x] (.dir js/console x)))
+    (.catch (fn [x] (println "request failed"))))
+
+ (type (js/buildShopClient))
+
+  )
 
 (om/root
  root-component

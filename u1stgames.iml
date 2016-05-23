@@ -68,7 +68,6 @@
     <orderEntry type="library" name="Leiningen: lein-doo:0.1.6" level="project" />
     <orderEntry type="library" name="Leiningen: log4j:1.2.16" level="project" />
     <orderEntry type="library" name="Leiningen: medley:0.7.3" level="project" />
-    <orderEntry type="library" name="Leiningen: mysql/mysql-connector-java:5.1.6" level="project" />
     <orderEntry type="library" name="Leiningen: net.colourcoding/poppea:0.2.1" level="project" />
     <orderEntry type="library" name="Leiningen: net.incongru.watchservice/barbary-watchservice:1.0" level="project" />
     <orderEntry type="library" name="Leiningen: net.java.dev.jna/jna:3.2.2" level="project" />
@@ -108,6 +107,7 @@
     <orderEntry type="library" name="Leiningen: org.msgpack/msgpack:0.6.10" level="project" />
     <orderEntry type="library" name="Leiningen: org.omcljs/om:1.0.0-alpha31" level="project" />
     <orderEntry type="library" name="Leiningen: org.ow2.asm/asm-all:4.2" level="project" />
+    <orderEntry type="library" name="Leiningen: org.postgresql/postgresql:9.4-1201-jdbc4" level="project" />
     <orderEntry type="library" name="Leiningen: org.slf4j/slf4j-api:1.7.7" level="project" />
     <orderEntry type="library" name="Leiningen: org.slf4j/slf4j-log4j12:1.7.7" level="project" />
     <orderEntry type="library" name="Leiningen: org.tobereplaced/mapply:1.0.0" level="project" />
