@@ -5,6 +5,7 @@
             [cljs.core.async :refer [put! chan <! >! pub sub unsub unsub-all close!]]
             [ajax.core :refer [GET POST]]
             [cljs.reader :as reader]
+            [cljs.pprint :refer [pprint]]
             [cemerick.url :refer (url url-encode)])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
@@ -41,6 +42,25 @@
          :sort {:id (u/uid-gen "sortby")}
          :games []
          :products []}))
+
+(defn product-block
+  [{:keys [body_html images title variants] :as data} owner]
+  (reify
+    om/IInitState
+    (init-state [_]
+      {})
+
+    om/IDidMount
+    (did-mount [_]
+      )
+
+    om/IRender
+    (render [_]
+      (dom/li #js {}
+              (dom/p #js {:style #js {:top "5px" :left "5px" :width "200px"
+                                      :textAlign "left" :height "25px"}}
+                     title)
+              ))))
 
 (defn home-block
   [{:keys [logo] :as data} owner]
@@ -401,11 +421,8 @@
               shop-client (get-shop-client)
               testing (get-products shop-client 278313223 p-chan)
               got-products (raw->clj-products (<! p-chan))]
-          #_(om/update! products got-products)
-          (println "got products: " (type got-products))
-          )
-        )
-      )
+          (om/update! products got-products)
+          (println "got products: " got-products))))
 
     om/IDidMount
     (did-mount [_]
@@ -424,7 +441,7 @@
                         games
                         (fn [games]
                           (into games (take page-size sorted-games))))
-                     (js/biggerInitial)))}))
+                      (js/biggerInitial)))}))
 
     om/IRender
     (render [_]
@@ -436,14 +453,14 @@
 
                  (cond
                    (= init-route "/") (apply dom/ul nil
-                                       #_(om/build home-block home {:key :id})
-                                       #_(om/build sort-block games {:key :id})
-                                       (om/build-all img-block games {:key :id}))
+                                             #_(om/build home-block home {:key :id})
+                                             #_(om/build sort-block games {:key :id})
+                                             (om/build-all img-block games {:key :id}))
 
                    (= init-route "/shop") (apply dom/ul nil
-                                       (om/build home-block home {:key :id})
-                                       #_(om/build sort-block games {:key :id})
-                                       (om/build-all img-block games {:key :id}))
+                                                 (om/build home-block home {:key :id})
+                                                 #_(om/build sort-block games {:key :id})
+                                                 (om/build-all product-block products {:key :id}))
 
                    :else (om/build home-block home {:key :id})))))))
 
@@ -469,11 +486,18 @@
   (first clj-products)
 
   (type products)
+  (pprint "hi")
+  (pprint (->
+            products
+            (aget "tail")
+            (as-> xs (map #(aget % "attrs") xs))
+            (js->clj :keywordize-keys true)
+            (first)
+            ))
+
   (.dir js/console (->
                      products
                      (aget "tail")
-                     (as-> xs (map #(aget % "attrs") xs))
-                     (js->clj :keywordize-keys true)
                      ))
 
   (.dir js/console (->
