@@ -48,18 +48,87 @@
   (reify
     om/IInitState
     (init-state [_]
-      {})
+      {:slider-id (u/uid-gen "slider")
+       :hover-uid (u/uid-gen "hover")
+       :bg-cover-uid (u/uid-gen "bgcover")
+       :unslider []})
 
     om/IDidMount
     (did-mount [_]
-      )
+      (let [{:keys [uid hover-uid bg-cover-uid player slider-id]} (om/get-state owner)
 
-    om/IRender
-    (render [_]
-      (dom/li #js {}
-              (dom/p #js {:style #js {:top "5px" :left "5px" :width "200px"
-                                      :textAlign "left" :height "25px"}}
-                     title)
+            unslider (.unslider (js/$ (str "#" slider-id)) #js {:autoplay true
+                                                                :speed 300
+                                                                :delay 800})]
+
+        #_(.unslider unslider "stop")
+
+        #_(.hover
+            (js/$ (str "#" hover-uid))
+            (fn []
+              (.animate
+                  (js/$ (str "#" bg-cover-uid))
+                  #js {:marginTop "-300px"} 200)
+              (.unslider unslider "start"))
+
+            (fn [x]
+              (.animate
+                (js/$ (str "#" bg-cover-uid))
+                #js {:marginTop "0px"} 200)
+              (.unslider unslider "stop")))))
+
+    om/IRenderState
+    (render-state [_ {:keys [hover-uid bg-cover-uid]}]
+      (dom/li #js {:id hover-uid}
+
+              (dom/div #js {:className "bg-cover"
+                            :style #js {:backgroundImage (str "url(" (:src (first images)) ")")
+                                        :backgroundSize "cover"
+                                        :backgroundRepeat "no-repeat"
+                                        :backgroundColour "blue"
+                                        :backgroundPosition "50% 50%"
+                                        :marginTop "0px"}}
+
+                       (dom/p #js {:style #js {:top "5px" :left "5px" :width "200px"
+                                               :background "black" :padding "3px"
+                                               :textAlign "left"}}
+                              title)
+
+
+                       (dom/p #js {:style #js {:bottom "5px" :left "5px" :background "black"
+                                               :padding "5px" :textAlign "left"}}
+                              (str "$" (-> variants first :price)))
+
+                       (dom/p #js {:style #js {:bottom "5px" :right "5px" :background "black"
+                                               :padding "5px" :textAlign "center"
+                                               :border "2px solid white"
+                                               :box-shadow "0 0 0 3px black"}}
+                              "ADD TO CART"))
+
+              #_(apply dom/ul nil
+                     (om/build-all
+                       (fn [data owner]
+                         (reify
+                           om/IRender
+                           (render [_]
+                             (dom/li nil
+                                     (dom/img #js {:src (:src data) :width "300"
+                                                   :style #js {:zIndex "-100"
+                                                               :position "relative"
+                                                               :top "50%"
+                                                               :transform "translateY(-50%)"}})))))
+                       images
+                       {:key :id}))
+
+              (dom/div #js {:style #js {:position "absolute" :width "100%" :height "80px"
+                                        :top "0px"
+                                        :background "linear-gradient(to top, rgba(0,0,0,0), rgba(0,0,0,1))"}})
+
+              #_(dom/div #js {:style #js {:position "absolute" :width "100%" :height "150px"
+                                        :bottom "0px"
+                                        :background "linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,1))"}})
+
+
               ))))
 
 (defn home-block
@@ -187,7 +256,9 @@
                      (nth (clojure.string/split ytvideo #"=") 1)
                      (clojure.string/split #"&")
                      (first)))
+
             {:keys [uid hover-uid bg-cover-uid player slider-id]} (om/get-state owner)
+
             unslider (.unslider (js/$ (str "#" slider-id)) #js {:autoplay true
                                                                 :speed 300
                                                                 :delay 800})]
@@ -267,7 +338,6 @@
                                    (dom/i #js {:className "fa fa-gamepad" :ariaHidden "true"})))
 
                 ;Image slider
-
                 (dom/div #js{:id slider-id}
                          (apply dom/ul nil
                                  (om/build-all
@@ -467,23 +537,15 @@
 
 (comment
 
-  (def shop-client (js/buildShopClient))
-
-  (.fetchQueryProducts shop-client 278313223)
-
-  (defn <get-prodcuts )
-
   (def t-c (chan))
-
   (get-products (get-shop-client) 278313223 t-c)
   (go (def products (js->clj (<! t-c) :keywordize-keys true)))
-  (go (def products (<! t-c)))
 
   (def clj-products (raw->clj-products products))
   clj-products
-  products
 
-  (first clj-products)
+  (pprint (:variants (first clj-products)))
+  (pprint (-> clj-products first :variants first :price))
 
   (type products)
   (pprint "hi")
