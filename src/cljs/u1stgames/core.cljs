@@ -45,6 +45,7 @@
          :modal-data {:display "none"
                       :title "Default Title"
                       :description "Default description"
+                      :img "http://placehold.it/300x300"
                       :price "1.00"}}))
 
 (defn modal-data-ref []
@@ -86,62 +87,73 @@
 
     om/IRenderState
     (render-state [_ {:keys [hover-uid bg-cover-uid]}]
-      (let [modal-data (om/observe owner (modal-data-ref))]
-        (dom/li #js {:onClick (fn [x] (om/transact! modal-data (fn [x] (assoc x :display "inherit")))  )
-                   :id hover-uid}
+      (let [modal-data (om/observe owner (modal-data-ref))
+            price (-> variants first :price)
+            src (:src (first images))]
+        (dom/li #js {:onClick (fn [x]
+                                (om/transact!
+                                  modal-data
+                                  (fn [x]
+                                    (assoc x
+                                      :title title
+                                      :price price
+                                      :img src
+                                      :display "inherit"))))
+                     :id hover-uid
+                     :style #js {:cursor "pointer"}}
 
-              (dom/div #js {:className "bg-cover"
-                            :style #js {:backgroundImage (str "url(" (:src (first images)) ")")
-                                        :backgroundSize "cover"
-                                        :backgroundRepeat "no-repeat"
-                                        :backgroundColour "blue"
-                                        :backgroundPosition "50% 50%"
-                                        :marginTop "0px"}}
+                (dom/div #js {:className "bg-cover"
+                              :style #js {:backgroundImage (str "url(" src ")")
+                                          :backgroundSize "cover"
+                                          :backgroundRepeat "no-repeat"
+                                          :backgroundColour "blue"
+                                          :backgroundPosition "50% 50%"
+                                          :marginTop "0px"}}
 
-                       (dom/p #js {:style #js {:top "5px" :left "5px" :width "200px"
-                                               :background "black" :padding "3px"
-                                               :textAlign "left"}}
-                              title)
+                         (dom/p #js {:style #js {:top "5px" :left "5px" :width "200px"
+                                                 :background "black" :padding "3px"
+                                                 :textAlign "left"}}
+                                title)
 
-                       (dom/p #js {:style #js {:bottom "5px" :left "5px" :background "black"
-                                               :padding "5px" :textAlign "left"}}
-                              (str "$" (-> variants first :price)))
+                         (dom/p #js {:style #js {:bottom "5px" :left "5px" :background "black"
+                                                 :padding "5px" :textAlign "left"}}
+                                (str "$" price))
 
-                       (dom/p #js {:style #js {:bottom "5px" :right "5px" :background "black"
-                                               :padding "5px" :textAlign "center"
-                                               :border "2px solid white"
-                                               :box-shadow "0 0 0 3px black"}}
-                              "ADD TO CART")
-
-
-
-                       )
-
-              #_(apply dom/ul nil
-                     (om/build-all
-                       (fn [data owner]
-                         (reify
-                           om/IRender
-                           (render [_]
-                             (dom/li nil
-                                     (dom/img #js {:src (:src data) :width "300"
-                                                   :style #js {:zIndex "-100"
-                                                               :position "relative"
-                                                               :top "50%"
-                                                               :transform "translateY(-50%)"}})))))
-                       images
-                       {:key :id}))
-
-              (dom/div #js {:style #js {:position "absolute" :width "100%" :height "80px"
-                                        :top "0px"
-                                        :background "linear-gradient(to top, rgba(0,0,0,0), rgba(0,0,0,1))"}})
-
-              #_(dom/div #js {:style #js {:position "absolute" :width "100%" :height "150px"
-                                        :bottom "0px"
-                                        :background "linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,1))"}})
+                         (dom/p #js {:style #js {:bottom "5px" :right "5px" :background "black"
+                                                 :padding "5px" :textAlign "center"
+                                                 :border "2px solid white"
+                                                 :box-shadow "0 0 0 3px black"}}
+                                "ADD TO CART")
 
 
-              )))))
+
+                         )
+
+                #_(apply dom/ul nil
+                         (om/build-all
+                           (fn [data owner]
+                             (reify
+                               om/IRender
+                               (render [_]
+                                 (dom/li nil
+                                         (dom/img #js {:src (:src data) :width "300"
+                                                       :style #js {:zIndex "-100"
+                                                                   :position "relative"
+                                                                   :top "50%"
+                                                                   :transform "translateY(-50%)"}})))))
+                           images
+                           {:key :id}))
+
+                (dom/div #js {:style #js {:position "absolute" :width "100%" :height "80px"
+                                          :top "0px"
+                                          :background "linear-gradient(to top, rgba(0,0,0,0), rgba(0,0,0,1))"}})
+
+                #_(dom/div #js {:style #js {:position "absolute" :width "100%" :height "150px"
+                                            :bottom "0px"
+                                            :background "linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,1))"}})
+
+
+                )))))
 
 (defn home-block
   [{:keys [logo] :as data} owner]
@@ -488,7 +500,7 @@
     (js->clj :keywordize-keys true)
     (vec)))
 
-(defn product-modal [{:keys [title description price display] :as modal-data} owner]
+(defn product-modal [{:keys [title description price display img] :as modal-data} owner]
   (reify
     om/IRender
     (render [_]
@@ -498,7 +510,7 @@
                                 :background "#2c3e50" :display display}}
                (dom/div #js {:style #js {:position "absolute" :left "0"
                                          :width "50%" :height "100%"}}
-                        (dom/img #js {:src "https://cdn.shopify.com/s/files/1/1292/2419/products/keychain.jpg?v=1463221578"
+                        (dom/img #js {:src img
                                       :className "child" :style #js {}}))
 
                (dom/div #js {:style #js {:position "absolute" :right "0"
@@ -507,7 +519,7 @@
                         (dom/div #js {:onClick (fn [_] (om/transact!
                                                          modal-data
                                                          (fn [x] (assoc x :display "none"))))
-                                      :style #js {:color "white"
+                                      :style #js {:color "white" :cursor "pointer"
                                                   :float "right":fontSize "3em"
                                                   :margin "10px"}} "X")
 
