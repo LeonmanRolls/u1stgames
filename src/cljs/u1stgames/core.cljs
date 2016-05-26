@@ -41,7 +41,14 @@
   (atom {:home {:id (u/uid-gen "logo") :logo "/img/u1st_logo_square.png"}
          :sort {:id (u/uid-gen "sortby")}
          :games []
-         :products []}))
+         :products []
+         :modal-data {:display "none"
+                      :title "Default Title"
+                      :description "Default description"
+                      :price "1.00"}}))
+
+(defn modal-data-ref []
+      (om/ref-cursor (:modal-data (om/root-cursor app-state))))
 
 (defn product-block
   [{:keys [body_html images title variants] :as data} owner]
@@ -79,7 +86,9 @@
 
     om/IRenderState
     (render-state [_ {:keys [hover-uid bg-cover-uid]}]
-      (dom/li #js {:id hover-uid}
+      (let [modal-data (om/observe owner (modal-data-ref))]
+        (dom/li #js {:onClick (fn [x] (om/transact! modal-data (fn [x] (assoc x :display "inherit")))  )
+                   :id hover-uid}
 
               (dom/div #js {:className "bg-cover"
                             :style #js {:backgroundImage (str "url(" (:src (first images)) ")")
@@ -94,7 +103,6 @@
                                                :textAlign "left"}}
                               title)
 
-
                        (dom/p #js {:style #js {:bottom "5px" :left "5px" :background "black"
                                                :padding "5px" :textAlign "left"}}
                               (str "$" (-> variants first :price)))
@@ -103,7 +111,11 @@
                                                :padding "5px" :textAlign "center"
                                                :border "2px solid white"
                                                :box-shadow "0 0 0 3px black"}}
-                              "ADD TO CART"))
+                              "ADD TO CART")
+
+
+
+                       )
 
               #_(apply dom/ul nil
                      (om/build-all
@@ -129,7 +141,7 @@
                                         :background "linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,1))"}})
 
 
-              ))))
+              )))))
 
 (defn home-block
   [{:keys [logo] :as data} owner]
@@ -476,7 +488,61 @@
     (js->clj :keywordize-keys true)
     (vec)))
 
-(defn root-component [{:keys [home games products]} owner]
+(defn product-modal [{:keys [title description price display] :as modal-data} owner]
+  (reify
+    om/IRender
+    (render [_]
+      (dom/div #js {:id "test-modal"
+                    :className "child"
+                    :style #js {:width "90%" :height "90%" :zIndex "100"
+                                :background "#2c3e50" :display display}}
+               (dom/div #js {:style #js {:position "absolute" :left "0"
+                                         :width "50%" :height "100%"}}
+                        (dom/img #js {:src "https://cdn.shopify.com/s/files/1/1292/2419/products/keychain.jpg?v=1463221578"
+                                      :className "child" :style #js {}}))
+
+               (dom/div #js {:style #js {:position "absolute" :right "0"
+                                         :width "50%" :height "100%"}}
+
+                        (dom/div #js {:onClick (fn [_] (om/transact!
+                                                         modal-data
+                                                         (fn [x] (assoc x :display "none"))))
+                                      :style #js {:color "white"
+                                                  :float "right":fontSize "3em"
+                                                  :margin "10px"}} "X")
+
+                        (dom/div #js {:className "parent"}
+
+                                 (dom/div #js {:style #js {:width "100%" :textAlign "center"}
+                                               :className "child"}
+
+                        (dom/p #js {:style #js {:fontWeight "bold" :color "white"
+                                                :fontSize "2em"}} title)
+
+                        (dom/p #js {:style #js {:fontWeight "bold" :color "white"
+                                                :fontSize "1.5em" :marginTop "-10px"}}
+                               (str "$" price " or 10,000 U1st Points"))
+
+                        (dom/p #js {:style #js {:fontWeight "" :color "white"
+                                                :fontSize "1em"}} description)
+
+                        (dom/p #js {:style #js {:background "black" :padding "5px"
+                                                :textAlign "center" :margin "30px"
+                                               :border "2px solid white" :color "white"
+                                               :box-shadow "0 0 0 3px black"}}
+                              "ADD TO CART")
+
+                                          )
+
+
+
+                                 )
+
+
+
+                        )))))
+
+(defn root-component [{:keys [home games products modal-data]} owner]
   (reify
 
     om/IInitState
@@ -515,11 +581,12 @@
 
     om/IRender
     (render [_]
-      (dom/div nil
-               (let [path (:path (url (-> js/location .-href)))
-                     {:keys [init-route]} (om/get-state owner)]
+      (let [path (:path (url (-> js/location .-href)))
+            {:keys [init-route]} (om/get-state owner)]
 
-                 (println "location: " (:path (url (-> js/location .-href))))
+        (dom/div #js {:style #js {:position "relative" :height "100%"}}
+
+                (om/build product-modal modal-data)
 
                  (cond
                    (= init-route "/") (apply dom/ul nil
@@ -527,10 +594,12 @@
                                              #_(om/build sort-block games {:key :id})
                                              (om/build-all img-block games {:key :id}))
 
-                   (= init-route "/shop") (apply dom/ul nil
-                                                 (om/build home-block home {:key :id})
-                                                 #_(om/build sort-block games {:key :id})
-                                                 (om/build-all product-block products {:key :id}))
+                   (= init-route "/shop") (dom/div #js {:style #js {:position "relative"
+                                                                    :zIndex "0"}}
+                                                   (apply dom/ul nil
+                                                          (om/build home-block home {:key :id})
+                                                          #_(om/build sort-block games {:key :id})
+                                                          (om/build-all product-block products {:key :id})))
 
                    :else (om/build home-block home {:key :id})))))))
 

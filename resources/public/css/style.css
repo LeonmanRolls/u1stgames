@@ -28,7 +28,9 @@ body {
     margin: 0px;
 }
 
-
+#app{
+height: 100%;
+}
 
 ul {
     list-style: none;
@@ -124,4 +126,12 @@ video {
 	opacity: 1;
 	box-shadow: 0 0 0 5px rgba(255,255,255,0.3) inset;
 }
+
+.child {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
 
