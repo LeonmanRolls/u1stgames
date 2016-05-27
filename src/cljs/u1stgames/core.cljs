@@ -649,7 +649,6 @@
   (:cart @app-state)
   (:products @app-state)
 
-
   (->
     (:cart @app-state)
     (.addVariants #js {:variant (-> (:products @app-state) first :variants first) :quantity 2})
@@ -657,8 +656,6 @@
     )
 
   (-> (:products @app-state) first :variants first)
-
-
 
   (def t-c (chan))
   (def shop-client (get-shop-client))
