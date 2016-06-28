@@ -75,7 +75,7 @@
   (om/ref-cursor (:products (om/root-cursor app-state))))
 
 (defn modal-data-ref []
-      (om/ref-cursor (:modal-data (om/root-cursor app-state))))
+  (om/ref-cursor (:modal-data (om/root-cursor app-state))))
 
 (defn product-block
   [{:keys [body_html images title variants] :as product-data} owner]
@@ -186,6 +186,53 @@
               (dom/div #js {:style #js {:height "300px"}
                             :dangerouslySetInnerHTML #js {:__html like-box-string}})))))
 
+(defn cart-block
+  [data owner]
+  (reify
+    om/IInitState
+    (init-state [_]
+      {:slider-id (u/uid-gen "slider")
+       :hover-uid (u/uid-gen "hover")
+       :bg-cover-uid (u/uid-gen "bgcover")
+       :unslider []})
+
+    om/IRenderState
+    (render-state [_ {:keys [hover-uid bg-cover-uid]}]
+      (let []
+        (dom/li #js {:id hover-uid
+                     :style #js {:cursor "pointer"}}
+
+                (dom/div #js {:className "bg-cover"
+                              :style #js {:backgroundImage (str "url(" "http://placehold.it/300x300" ")")
+                                          :backgroundSize "cover"
+                                          :backgroundRepeat "no-repeat"
+                                          :backgroundColour "blue"
+                                          :backgroundPosition "50% 50%"
+                                          :marginTop "0px"}}
+
+                         (.dir js/console data)
+                         (println "type: " (type data))
+
+                         (dom/p #js {:style #js {:top "5px" :left "5px" :width "200px"
+                                                 :background "black" :padding "3px"
+                                                 :textAlign "left"}}
+                                "title")
+
+                         (dom/p #js {:style #js {:bottom "5px" :left "5px" :background "black"
+                                                 :padding "5px" :textAlign "left"}}
+                                (str "$"))
+
+                         (dom/p #js {:style #js {:bottom "5px" :right "5px" :background "black"
+                                                 :padding "5px" :textAlign "center"
+                                                 :border "2px solid white"
+                                                 :boxShadow "0 0 0 3px black"}}
+                                "ADD TO CART"))
+
+                (dom/div #js {:style #js {:position "absolute" :width "100%" :height "80px"
+                                          :top "0px"
+                                          :background "linear-gradient(to top, rgba(0,0,0,0), rgba(0,0,0,1))"}}))))))
+
+
 (defn sort-block
   [games owner]
   (reify
@@ -212,8 +259,8 @@
                                   (fn [games]
                                     (vec
                                       (sort-by
-                                      :title
-                                      games)
+                                        :title
+                                        games)
                                       )
                                     )))}
                 "Alphabetically")))))
@@ -227,13 +274,7 @@
     om/IRenderState
     (render-state [_ {:keys [uid hover-uid bg-cover-uid player]}]
       (dom/li nil
-              (dom/div #js {:dangerouslySetInnerHTML #js {:__html  "
-                                                <ins class=\"adsbygoogle\"
-                                                style=\"display:inline-block;width:125px;height:125px\"
-                                                data-ad-client=\"ca-pub-2815558012050620\"
-                                                data-ad-slot=\"8353125252\"></ins>
-                                                " }})))))
-
+              (dom/div nil)))))
 
 
 
@@ -268,34 +309,34 @@
         (.unslider unslider "stop")
 
         (.hover
-            (js/$ (str "#" hover-uid))
-            (fn []
-              (.animate
-                  (js/$ (str "#" bg-cover-uid))
-                  #js {:marginTop "-300px"} 200)
-              (.unslider unslider "start")
-                #_(om/set-state!
-                    owner
-                    :player
-                    (new js/YT.Player uid #js {:height "300"
-                                               :width "300"
-                                               :videoId ytid
-                                               :playerVars #js {:controls 0
-                                                                :showinfo 0
-                                                                :modestbranding 1
-                                                                :autoplay 1
-                                                                :loop 1
-                                                                :rel 0}
-                                               :events #js {:onReady #(println "ready")
-                                                            :onStateChange #(println "state change")}})))
+          (js/$ (str "#" hover-uid))
+          (fn []
+            (.animate
+              (js/$ (str "#" bg-cover-uid))
+              #js {:marginTop "-300px"} 200)
+            (.unslider unslider "start")
+            #_(om/set-state!
+                owner
+                :player
+                (new js/YT.Player uid #js {:height "300"
+                                           :width "300"
+                                           :videoId ytid
+                                           :playerVars #js {:controls 0
+                                                            :showinfo 0
+                                                            :modestbranding 1
+                                                            :autoplay 1
+                                                            :loop 1
+                                                            :rel 0}
+                                           :events #js {:onReady #(println "ready")
+                                                        :onStateChange #(println "state change")}})))
 
-            (fn [x]
-              (.animate
-                (js/$ (str "#" bg-cover-uid))
-                #js {:marginTop "0px"} 200)
-              (.unslider unslider "stop")
-              #_(om/get-state owner :unslider)
-              #_(.destroy (om/get-state owner :player))))))
+          (fn [x]
+            (.animate
+              (js/$ (str "#" bg-cover-uid))
+              #js {:marginTop "0px"} 200)
+            (.unslider unslider "stop")
+            #_(om/get-state owner :unslider)
+            #_(.destroy (om/get-state owner :player))))))
 
 
     om/IRenderState
@@ -342,20 +383,20 @@
                 ;Image slider
                 (dom/div #js{:id slider-id}
                          (apply dom/ul nil
-                                 (om/build-all
-                                   (fn [data owner]
-                                     (reify
-                                       om/IRender
-                                       (render [_]
-                                         (dom/li nil
-                                                 (dom/img #js {:src (:url data) :width "300"
-                                                               :style #js {:zIndex "-100"
-                                                                           :position "relative"
-                                                                           :top "50%"
-                                                                           :transform "translateY(-50%)"}})))))
-                                   (rest pics)
-                                   {:key :uid}
-                                   )))
+                                (om/build-all
+                                  (fn [data owner]
+                                    (reify
+                                      om/IRender
+                                      (render [_]
+                                        (dom/li nil
+                                                (dom/img #js {:src (:url data) :width "300"
+                                                              :style #js {:zIndex "-100"
+                                                                          :position "relative"
+                                                                          :top "50%"
+                                                                          :transform "translateY(-50%)"}})))))
+                                  (rest pics)
+                                  {:key :uid}
+                                  )))
 
                 #_(dom/div #js {:id uid})
 
@@ -407,8 +448,8 @@
     (render-state [_ {:keys [uid hover-uid bg-cover-uid player]}]
       (dom/li #js {:id hover-uid
                    :style #js  {
-                                        :backgroundSize "cover"
-                                        :backgroundRepeat "no-repeat"}
+                                :backgroundSize "cover"
+                                :backgroundRepeat "no-repeat"}
                    ;  :onMouseOver #_(.playVideo player)
                    ; :onMouseOut #_(.pauseVideo player)
                    }
@@ -439,13 +480,13 @@
                      "Users: " monthly_active_users)
 
               (dom/a #js {:href (str "https://apps.facebook.com/" appid) :target "_blank"}
-              (dom/button #js {:style #js {:position "absolute" :bottom "5px" :right "5px"
-                                           :background "transparent" :color "white"
-                                           :border "1px solid white" :padding "5px"
-                                           :width "70px" :textTransform "uppercase"
-                                           :fontWeight "bold" :cursor "crosshair"}}
-                          "Play "
-                          (dom/i #js {:className "fa fa-gamepad" :ariaHidden "true"})))))))
+                     (dom/button #js {:style #js {:position "absolute" :bottom "5px" :right "5px"
+                                                  :background "transparent" :color "white"
+                                                  :border "1px solid white" :padding "5px"
+                                                  :width "70px" :textTransform "uppercase"
+                                                  :fontWeight "bold" :cursor "crosshair"}}
+                                 "Play "
+                                 (dom/i #js {:className "fa fa-gamepad" :ariaHidden "true"})))))))
 
 
 (defn load-more [games]
@@ -459,7 +500,7 @@
 
 (defn load-more-export [games]
   (defn ^:export loadMoreNow []
-   (load-more games)))
+    (load-more games)))
 
 (defn get-products [shop-client collectionid c]
   (->
@@ -525,7 +566,7 @@
                                                                     :boxShadow "0 0 0 3px black"}
                                                         :onClick (fn [x]
                                                                    (->
-                                                                     (:cart all-data)
+                                                                     (first (:cart all-data))
                                                                      (.addVariants #js {:variant (->
                                                                                                    (:product modal-data)
                                                                                                    :variants
@@ -533,8 +574,8 @@
                                                                                         :quantity 2})
                                                                      (.then (fn [cart]
                                                                               (do
-                                                                                (.dir js/console cart)
-                                                                                (om/update! all-data :cart cart))))))}
+                                                                                #_(.dir js/console cart)
+                                                                                (om/update! all-data :cart [cart]))))))}
                                                    "ADD TO CART")))))))))
 
 (defn shopify-init [app-data products]
@@ -551,9 +592,22 @@
         (.createCart)
         (.then
           (fn [new-cart]
-            (om/update! app-data :cart new-cart)))))))
+            (om/update! app-data :cart [new-cart])))))))
 
-(defn root-component [{:keys [home games products modal-data privacy terms] :as app-data} owner]
+(defn simple-text [html-string]
+  (dom/div #js {:style #js {:position "relative"
+                            :zIndex "0"
+                            :height "100%"}}
+
+           (dom/div #js {:className "child"
+                         :dangerouslySetInnerHTML #js {:__html html-string}
+                         :style #js {:width "90%"
+                                     :height "90%"
+                                     :color "white"
+                                     :fontWeight "bold"}})))
+
+(defn root-component [{:keys [home games products modal-data privacy terms cart]
+                       :as app-data} owner]
   (reify
 
     om/IInitState
@@ -575,7 +629,7 @@
                   (assoc x
                     :cart new-cart))))))
 
-      (shopify-init app-data products)
+      #_(shopify-init app-data products)
       )
 
     om/IDidMount
@@ -595,6 +649,7 @@
                         games
                         (fn [games]
                           (into games (take page-size sorted-games))))
+                      (println "/fbgames: " all-games)
                       (js/biggerInitial)))}))
 
     om/IRender
@@ -604,7 +659,7 @@
 
         (dom/div #js {:style #js {:position "relative" :height "100%"}}
 
-                 (om/build product-modal modal-data)
+                 #_(om/build product-modal modal-data)
 
                  (cond
                    (= init-route "/") (apply dom/ul nil
@@ -616,33 +671,19 @@
                                                                     :zIndex "0"}}
                                                    (apply dom/ul nil
                                                           (om/build home-block home {:key :id})
-                                                          #_(om/build sort-block games {:key :id})
+                                                          (om/build cart-block [])
                                                           (om/build-all product-block products {:key :id})))
 
-                   (= init-route "/privacy") (dom/div #js {:style #js {:position "relative"
-                                                                       :zIndex "0"
-                                                                       :height "100%"}}
+                   (= init-route "/privacy") (simple-text privacy)
 
-                                                      (dom/div #js {:className "child"
-                                                                  :dangerouslySetInnerHTML #js {:__html privacy}
-                                                                  :style #js {:width "90%"
-                                                                              :height "90%"
-                                                                              :color "white"
-                                                                              :fontWeight "bold"}}))
-
-                   (= init-route "/terms") (dom/div #js {:style #js {:position "relative"
-                                                                       :zIndex "0"
-                                                                       :height "100%"}}
-
-                                                      (dom/div #js {:className "child"
-                                                                  :dangerouslySetInnerHTML #js {:__html terms}
-                                                                  :style #js {:width "90%"
-                                                                              :height "90%"
-                                                                              :color "white"
-                                                                              :fontWeight "bold"}}))
+                   (= init-route "/terms") (simple-text terms)
 
                    :else (om/build home-block home {:key :id})))))))
 
+(om/root
+  root-component
+  app-state
+  {:target (js/document.getElementById "app")})
 
 (comment
 
@@ -668,9 +709,6 @@
 
   )
 
-(om/root
- root-component
- app-state
- {:target (js/document.getElementById "app")})
+
 
 
