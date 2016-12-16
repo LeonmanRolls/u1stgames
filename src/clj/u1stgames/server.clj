@@ -27,13 +27,13 @@
           s (drop-while #(Character/isDigit %) s)]
       (empty? s))))
 
-(def graph-base-string "https://graph.facebook.com/1557991804501532?fields=picture&amp;access_token=240902319579455f6c7c8504a5566f0c491c79b46c8bba8")
+(def graph-base-string "")
 
 (defn graph-app-string [appid]
   (str
     "https://graph.facebook.com/"
     appid
-    "?fields=picture,subcategory,monthly_active_users&amp;access_token=240902319579455f6c7c8504a5566f0c491c79b46c8bba8"))
+    ""))
 
 (def mysql-db
   (or
@@ -41,7 +41,7 @@
     {:subprotocol "postgresql"
      :subname "//localhost:5432/fortunecookies"
      :user "postgres"
-     :password "1fishy4me"}))
+     :password ""}))
 
 (defn generate-response [data & [status]]
   {:status (or status 200)
